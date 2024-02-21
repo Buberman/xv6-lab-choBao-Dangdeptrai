@@ -64,7 +64,7 @@ xargs_exec(char* program, char** paraments)
             printf("child process\n");
             printf("    program = %s\n", program);
             
-            for (int i = 0; paraments[i] != 0; ++i) {
+            for (int i = 0; paraments[i] != 0; i++) {
                 printf("    paraments[%d] = %s\n", i, paraments[i]);
             }
         )
