@@ -37,7 +37,7 @@ xargs(char** first_arg, int size, char* program_name)
         argIndex++;
       }
       arg[argIndex] = malloc(sizeof(char) * (m + 1)); // Allocate memory for the argument
-      if (arg[argIndex] == NULL) {
+      if (arg[argIndex] == 0) {
         fprintf(2, "xargs: memory allocation failed.\n");
         exit(1);
       }
