@@ -1,0 +1,18 @@
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ sh < xargstest.sh
+$ echo DONE
+$ $ $ $ $ usage: grep pattern [file ...]
+usage: grep pattern [file ...]
+usage: grep pattern [file ...]
+usage: grep pattern [file ...]
+usage: grep pattern [file ...]
+usage: grep pattern [file ...]
+usertrap(): unexpected scause 0x000000000000000f pid=10
+            sepc=0x000000000000071a stval=0x0000000000002fe8
+$ $ DONE

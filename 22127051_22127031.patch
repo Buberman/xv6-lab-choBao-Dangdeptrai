@@ -1,0 +1,15 @@
+diff --git a/Makefile b/Makefile
+index 365c91b..ad90cf8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -172,6 +172,10 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
+ .PRECIOUS: %.o
+ 
+ UPROGS=\
++	$U/_find\
++	$U/_primes\
++	$U/_pingpong\
++	$U/_sleep\
+ 	$U/_cat\
+ 	$U/_echo\
+ 	$U/_forktest\
