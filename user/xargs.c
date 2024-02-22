@@ -2,113 +2,84 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #include "kernel/param.h"
-#include "kernel/fs.h"
-
-#define MAXARGS 10
-#define MAXCMDLEN 100
-
-int getcmd(char *buf, int nbuf);
-int gettoken(char **ps, char *es, char **q, char **eq);
 
 int
-main(int argc, char *argv[])
+getcmd(char **buf*, int *nbuf*)
 {
-    char *xargs[MAXARGS];
-    int xargs_count = 0;
+  memset(buf, 0, nbuf);
+  gets(buf, nbuf);
+  if(buf[0] == 0) *// EOF*
+  {
+    *//printf("WOW!\n");*
+    return -1;
+  }
 
-    // Copy command-line arguments into xargs
-    for (int i = 1; i < argc && xargs_count < MAXARGS; i++) {
-        xargs[xargs_count++] = argv[i];
-    }
-
-    static char buf[MAXCMDLEN];
-    char *cmd;
-    int cmd_len;
-
-    // Read commands from standard input
-    while ((cmd_len = getcmd(buf, sizeof(buf))) > 0) {
-        cmd = buf;
-
-        // Tokenize the command
-        char *token, *eq;
-        while ((token = strchr(cmd, ' ')) != 0) {
-            *token++ = 0;
-            xargs[xargs_count++] = cmd;
-            cmd = token;
-            if (xargs_count >= MAXARGS) {
-                break;
-            }
-        }
-        if (xargs_count >= MAXARGS) {
-            break;
-        }
-        eq = cmd + cmd_len - 1;
-        while (eq >= cmd && (*eq == ' ' || *eq == '\n')) {
-            *eq-- = 0;
-        }
-        xargs[xargs_count++] = cmd;
-
-        // Fork and execute the command
-        int pid = fork();
-        if (pid < 0) {
-            fprintf(2, "fork failed\n");
-            exit(1);
-        } else if (pid == 0) {
-            exec(xargs[0], xargs);
-            fprintf(2, "exec failed\n");
-            exit(1);
-        } else {
-            wait(0);
-        }
-    }
-
-    exit(0);
+  return 0;
 }
 
-// Read a command from standard input
+char whitespace[] = " \t\r\n\v";
+
 int
-getcmd(char *buf, int nbuf)
+gettoken(char ***ps*, char **es*, char ***q*, char ***eq*)
 {
-    fprintf(2, "$ ");
-    memset(buf, 0, nbuf);
-    gets(buf, nbuf);
-    if (buf[0] == 0) {
-        return -1; // EOF
-    }
-    return strlen(buf);
+  char *s;
+  int ret;
+
+  s = *ps;
+  while(s < es && strchr(whitespace, *s))
+    s++;
+  if(q)
+    *q = s;
+  ret = *s;
+  switch(*s){
+  case 0:
+    break;
+  default:
+    ret = 'a';
+    while(s < es && !strchr(whitespace, **s*))
+      s++;
+    break;
+  }
+  if(eq)
+    *eq = s;
+
+  while(s < es && strchr(whitespace, *s))
+    s++;
+  *ps = s;
+  return ret;
 }
 
-// Tokenize a command
 int
-gettoken(char **ps, char *es, char **q, char **eq)
+main(int *argc*, char **argv*[])
 {
-    char *s = *ps;
-    int ret;
+  char *xargs[MAXARG];
+  for (int i=1; i<argc;i++) {
+    *// Skip `xargs` cmd name.*
+    xargs[i-1] = argv[i];
+  }
 
-    while (s < es && strchr(" \t\r\n\v", *s)) {
-        s++;
+  static char buf[MAXARG][100];
+  char *q, *eq;
+  int j = argc-1;
+  int i = 0;
+  *// Split each line into array of args.*
+  while(getcmd(buf[i], sizeof(buf[i])) >= 0){
+    char *s = buf[i];
+    char *es = s + strlen(s);
+    while (gettoken(&s, es, &q, &eq) != 0) {
+      *// Set end to 0.*
+      xargs[j] = q;
+      *eq = 0;
+      j++;
+      i++;
     }
-    if (q) {
-        *q = s;
-    }
-    ret = *s;
-    switch (*s) {
-        case 0:
-            break;
-        default:
-            ret = 'a';
-            while (s < es && !strchr(" \t\r\n\v", *s)) {
-                s++;
-            }
-            break;
-    }
-    if (eq) {
-        *eq = s;
-    }
+  }
 
-    while (s < es && strchr(" \t\r\n\v", *s)) {
-        s++;
-    }
-    *ps = s;
-    return ret;
+  int pid = fork();
+  if (pid == 0) {
+    exec(xargs[0], xargs);
+  }
+  wait();
+
+  exit();
 }
