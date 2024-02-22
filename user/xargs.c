@@ -34,7 +34,7 @@ void xargs(char *program, char **arguments) {
         char *token = strtok(buf, " \t\r\n\v");
         while (token != NULL && argc < MAXARGS) {
             args[argc++] = token;
-            token = strtok(0, " \t\r\n\v");
+            token = strtok(NULL, " \t\r\n\v");
         }
         args[argc] = 0; // Null-terminate the argument list
 
