@@ -4,7 +4,7 @@
 #include "kernel/param.h"
 
 int
-getcmd(char **buf*, int *nbuf*)
+getcmd(char **buf[MAXARG], int *nbuf[MAXARG])
 {
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
@@ -20,7 +20,7 @@ getcmd(char **buf*, int *nbuf*)
 char whitespace[] = " \t\r\n\v";
 
 int
-gettoken(char ***ps*, char **es*, char ***q*, char ***eq*)
+gettoken(char ***ps[MAXARG], char **es[MAXARG], char ***q[MAXARG], char ***eq[MAXARG])
 {
   char *s;
   int ret;
@@ -50,7 +50,7 @@ gettoken(char ***ps*, char **es*, char ***q*, char ***eq*)
 }
 
 int
-main(int *argc*, char **argv*[])
+main(int *argc[MAXARG], char **argv[MAXARG][])
 {
   char *xargs[MAXARG];
   for (int i=1; i<argc;i++) {
