@@ -1,100 +1,114 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
-#include "kernel/param.h"
 #include "user/user.h"
-#include "kernel/fs.h" // Include for 'mkdir' syscall
+#include "kernel/param.h"
+#include "kernel/fs.h"
 
-#define DEBUG 0
+#define MAXARGS 10
+#define MAXCMDLEN 100
 
-#define debug(codes) if(DEBUG) {codes}
-
-void xargs_exec(char* program, char** arguments);
-
-void
-xargs(char** first_arg, int size, char* program_name)
-{
-  char buf[1024];
-  debug(
-    for (int i = 0; i < size; ++i) {
-      printf("first_arg[%d] = %s\n", i, first_arg[i]);
-    }
-  )
-    char* arg[MAXARG];
-  int m = 0;
-  while (read(0, buf + m, 1) == 1) {
-    if (m >= 1024) {
-      fprintf(2, "xargs: arguments too long.\n");
-      exit(1);
-    }
-    if (buf[m] == '\n') {
-      buf[m] = '\0';
-      debug(printf("this line is %s\n", buf);)
-        memmove(arg, first_arg, sizeof(char*) * size); // Fixed size of the pointer
-      // set a arg index
-      int argIndex = size;
-      if (argIndex == 0) {
-        arg[argIndex] = program_name;
-        argIndex++;
-      }
-      arg[argIndex] = malloc(sizeof(char) * (m + 1)); // Allocate memory for the argument
-      if (arg[argIndex] == 0) {
-        fprintf(2, "xargs: memory allocation failed.\n");
-        exit(1);
-      }
-      memmove(arg[argIndex], buf, m + 1);
-      debug(
-        for (int j = 0; j <= argIndex; ++j)
-          printf("arg[%d] = *%s*\n", j, arg[j]);
-      )
-        // exec(char*, char** paraments): paraments ending with zero
-        arg[argIndex + 1] = 0;
-      xargs_exec(program_name, arg);
-      free(arg[argIndex]); // Free the allocated memory
-      m = 0;
-    }
-    else {
-      m++;
-    }
-  }
-}
-
-void
-xargs_exec(char* program, char** arguments)
-{
-  if (fork() > 0) {
-    wait(0);
-  }
-  else {
-    debug(
-      printf("child process\n");
-    printf("    program = %s\n", program);
-
-    for (int i = 0; arguments[i] != 0; i++) {
-      printf("    arguments[%d] = %s\n", i, arguments[i]);
-    }
-    )
-      if (exec(program, arguments) == -1) {
-        fprintf(2, "xargs: Error exec %s\n", program);
-      }
-    debug(printf("child exit");)
-  }
-}
+int getcmd(char *buf, int nbuf);
+int gettoken(char **ps, char *es, char **q, char **eq);
 
 int
-main(int argc, char* argv[])
+main(int argc, char *argv[])
 {
-  debug(printf("main func\n");)
-    char* name = "echo";
-  if (argc >= 2) {
-    name = argv[1];
-    debug(
-      printf("argc >= 2\n");
-    printf("argv[1] = %s\n", argv[1]);
-    )
-  }
-  else {
-    debug(printf("argc == 1\n");)
-  }
-  xargs(argv + 1, argc - 1, name);
-  exit(0);
+    char *xargs[MAXARGS];
+    int xargs_count = 0;
+
+    // Copy command-line arguments into xargs
+    for (int i = 1; i < argc && xargs_count < MAXARGS; i++) {
+        xargs[xargs_count++] = argv[i];
+    }
+
+    static char buf[MAXCMDLEN];
+    char *cmd;
+    int cmd_len;
+
+    // Read commands from standard input
+    while ((cmd_len = getcmd(buf, sizeof(buf))) > 0) {
+        cmd = buf;
+
+        // Tokenize the command
+        char *token, *eq;
+        while ((token = strchr(cmd, ' ')) != 0) {
+            *token++ = 0;
+            xargs[xargs_count++] = cmd;
+            cmd = token;
+            if (xargs_count >= MAXARGS) {
+                break;
+            }
+        }
+        if (xargs_count >= MAXARGS) {
+            break;
+        }
+        eq = cmd + cmd_len - 1;
+        while (eq >= cmd && (*eq == ' ' || *eq == '\n')) {
+            *eq-- = 0;
+        }
+        xargs[xargs_count++] = cmd;
+
+        // Fork and execute the command
+        int pid = fork();
+        if (pid < 0) {
+            fprintf(2, "fork failed\n");
+            exit(1);
+        } else if (pid == 0) {
+            exec(xargs[0], xargs);
+            fprintf(2, "exec failed\n");
+            exit(1);
+        } else {
+            wait(0);
+        }
+    }
+
+    exit(0);
+}
+
+// Read a command from standard input
+int
+getcmd(char *buf, int nbuf)
+{
+    fprintf(2, "$ ");
+    memset(buf, 0, nbuf);
+    gets(buf, nbuf);
+    if (buf[0] == 0) {
+        return -1; // EOF
+    }
+    return strlen(buf);
+}
+
+// Tokenize a command
+int
+gettoken(char **ps, char *es, char **q, char **eq)
+{
+    char *s = *ps;
+    int ret;
+
+    while (s < es && strchr(" \t\r\n\v", *s)) {
+        s++;
+    }
+    if (q) {
+        *q = s;
+    }
+    ret = *s;
+    switch (*s) {
+        case 0:
+            break;
+        default:
+            ret = 'a';
+            while (s < es && !strchr(" \t\r\n\v", *s)) {
+                s++;
+            }
+            break;
+    }
+    if (eq) {
+        *eq = s;
+    }
+
+    while (s < es && strchr(" \t\r\n\v", *s)) {
+        s++;
+    }
+    *ps = s;
+    return ret;
 }
