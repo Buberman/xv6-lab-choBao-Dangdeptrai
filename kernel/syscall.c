@@ -130,6 +130,25 @@ static uint64 (*syscalls[])(void) = {
 [SYS_trace]   sys_trace,
 };
 
+static char *syscall_names[] = {
+    [SYS_fork] = "fork",
+    [SYS_exit] = "exit",
+    [SYS_wait] = "wait",
+    [SYS_pipe] = "pipe",
+    [SYS_read] = "read",
+    [SYS_kill] = "kill",
+    [SYS_exec] = "exec",
+    [SYS_fstat] = "fstat",
+    [SYS_chdir] = "chdir",
+    [SYS_dup] = "dup",
+    [SYS_getpid] = "getpid",
+    [SYS_sbrk] = "sbrk",
+    [SYS_sleep] = "sleep",
+    [SYS_uptime] = "uptime",
+    // Add other syscall names here
+    [SYS_trace] = "trace",  // Add trace system call name
+};
+
 void
 syscall(void)
 {
@@ -140,7 +159,7 @@ syscall(void)
     if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
         // Check if tracing is enabled for this system call
         if (p && (p->trace & (1 << num)) != 0)
-            printf("%d: syscall %s -> %d\n", p->pid, syscall[num], p->trapframe->a0);
+            printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
 
         // Call the system call function and store its return value
         p->trapframe->a0 = syscalls[num]();
