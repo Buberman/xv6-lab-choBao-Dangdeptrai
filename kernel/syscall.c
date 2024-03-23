@@ -162,10 +162,10 @@ syscall(void)
 
         // Check if tracing is enabled for this system call
         if (p->trace_mask & (1 << num)) {
-            cprintf("%d: syscall %d (%s) -> %d\n", p->pid, num, syscall_names[num], p->trapframe->a0);
+            printf("%d: syscall %d (%s) -> %d\n", p->pid, num, syscall_names[num], p->trapframe->a0);
         }
     } else {
-        cprintf("%d %s: unknown sys call %d\n",
+        printf("%d %s: unknown sys call %d\n",
                 p->pid, p->name, num);
         p->trapframe->a0 = -1;
     }
