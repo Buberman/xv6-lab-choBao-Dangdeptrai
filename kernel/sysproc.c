@@ -98,6 +98,6 @@ sys_trace(void)
 {
   int mask;
   argint(0, &mask);
-  myproc()->syscall_trace = mask;
+  myproc()->trace = mask;
   return 0;
 }
