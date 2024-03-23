@@ -140,7 +140,7 @@ syscall(void)
     if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
         // Check if tracing is enabled for this system call
         if (p && (p->trace & (1 << num)) != 0)
-            printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
+            printf("%d: syscall %s -> %d\n", p->pid, syscall[num], p->trapframe->a0);
 
         // Call the system call function and store its return value
         p->trapframe->a0 = syscalls[num]();
