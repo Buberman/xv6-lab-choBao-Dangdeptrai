@@ -139,13 +139,13 @@ syscall(void)
     num = p->trapframe->a7;
     if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
         // Check if tracing is enabled for this system call
-        if (p && (p->trace_mask & (1 << num)) != 0)
-            cprintf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
+        if (p && (p->trace & (1 << num)) != 0)
+            printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
 
         // Call the system call function and store its return value
         p->trapframe->a0 = syscalls[num]();
     } else {
-        cprintf("%d %s: unknown sys call %d\n",
+        printf("%d %s: unknown sys call %d\n",
                 p->pid, p->name, num);
         p->trapframe->a0 = -1;
     }
