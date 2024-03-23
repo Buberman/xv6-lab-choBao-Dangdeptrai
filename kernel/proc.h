@@ -104,8 +104,5 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-<<<<<<< HEAD
-  uint64 trace_mask;
-=======
->>>>>>> parent of c2987e7 (làm câu 2 lần 1)
+
 };
