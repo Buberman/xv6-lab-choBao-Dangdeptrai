@@ -22,7 +22,7 @@ OBJS = \
   $K/sysproc.o \
   $K/bio.o \
   $K/fs.o \
-  $K/log.o \$U/_trace\
+  $K/log.o\
   $K/sleeplock.o \
   $K/file.o \
   $K/pipe.o \
@@ -192,11 +192,8 @@ UPROGS=\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\
-	$U/_trace\
 	$U/_zombie\
-
-
-
+	$U/_trace\
 
 ifeq ($(LAB),$(filter $(LAB), lock))
 UPROGS += \
