@@ -22,7 +22,7 @@ OBJS = \
   $K/sysproc.o \
   $K/bio.o \
   $K/fs.o \
-  $K/log.o \
+  $K/log.o \$U/_trace\
   $K/sleeplock.o \
   $K/file.o \
   $K/pipe.o \
@@ -193,6 +193,7 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_trace\
 
 
 
