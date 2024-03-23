@@ -172,11 +172,11 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
-	$U/_xargs\
-	$U/_find\
-	$U/_primes\
-	$U/_pingpong\
 	$U/_sleep\
+	$U/_primes\
+	$U/_find\
+	$U/_pingpong\
+	$U/_xargs\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
@@ -193,8 +193,6 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
-
-
 
 
 

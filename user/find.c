@@ -3,114 +3,71 @@
 #include "user/user.h"
 #include "kernel/fs.h"
 
-#define MAX_PATH 512
+void find_files(char* directory, char* target) {
+    char buffer[512], *ptr;
+    int file_descriptor;
+    struct dirent directory_entry;
+    struct stat file_stat;
 
-char *strcat(char *dest, const char *src);
-
-int match(char *s, char *p) {
-    while (*s && *p) {
-        if (*p == '*') {
-            if (*(p + 1) == '\0') 
-                return 1;
-            while (*s) {
-                if (match(s++, p + 1))
-                    return 1;
-            }
-            return 0;
-        } else if (*p == '.' || *s == *p) {
-            s++;
-            p++;
-        } else {
-            return 0;
-        }
-    }
-    return *s == '\0' && *p == '\0';
-}
-
-void catdir(char *prefix, char *name, char *buf) {
-    int prefix_len = strlen(prefix);
-    int name_len = strlen(name);
-    int i, j;
-
-    for (i = 0; i < prefix_len; i++) {
-        buf[i] = prefix[i];
+    if((file_descriptor = open(directory, 0)) < 0) {
+        fprintf(2, "find_files: cannot open %s\n", directory);
+        return;
     }
 
-    buf[i++] = '/';
-
-    for (j = 0; j < name_len; j++) {
-        buf[i++] = name[j];
+    if(fstat(file_descriptor, &file_stat) < 0) {
+        fprintf(2, "find_files: cannot stat %s\n", directory);
+        close(file_descriptor);
+        return;
     }
 
-    buf[i] = '\0';
-}
+    if(file_stat.type != T_DIR) {
+        fprintf(2, "find_files: %s is not a directory\n", directory);
+        close(file_descriptor);
+        return;
+    }
+    if(strlen(directory) + 1 + DIRSIZ + 1 > sizeof buffer){
+        printf("find_files: path too long\n");
+        close(file_descriptor);
+        return;
+    }
 
-void find(int fd, char *dir, char *name) {
-    struct dirent de;
-  
-    while (read(fd, &de, sizeof(de)) == sizeof(de)) {
-        if (strcmp(de.name, ".") == 0 || strcmp(de.name, "..") == 0)
+    strcpy(buffer, directory);
+    ptr = buffer+strlen(buffer);
+    *ptr++ = '/';
+
+    while(read(file_descriptor, &directory_entry, sizeof(directory_entry)) == sizeof(directory_entry)) {
+        if(directory_entry.inum == 0) 
             continue;
-        char path[MAX_PATH];
-        catdir(dir, de.name, path);
-        
-        struct stat st;
-        if (stat(path, &st) < 0) {
-            fprintf(2, "find: cannot stat %s\n", path);
+        if(strcmp(directory_entry.name, ".") == 0 || strcmp(directory_entry.name, "..") == 0)
+            continue;
+        memmove(ptr, directory_entry.name, DIRSIZ);
+        ptr[DIRSIZ] = 0;
+        if(stat(buffer, &file_stat) < 0) {
+            fprintf(2, "find_files: cannot stat %s\n", buffer);
             continue;
         }
-        
-        if (st.type == T_FILE && match(de.name, name)) {
-            printf("%s\n", path);
-        } else if (st.type == T_DIR) {
-            int subfd;
-            if ((subfd = open(path, 0)) < 0) {
-                fprintf(2, "find: cannot open %s\n", path);
-                continue;
+
+        switch (file_stat.type)
+        {
+        case T_FILE:
+            if(strcmp(directory_entry.name, target) == 0) {
+                printf("%s\n", buffer);
             }
-            find(subfd, path, name);
-            close(subfd);
+            break;
+        
+        case T_DIR:
+            find_files(buffer, target);
         }
     }
+    close(file_descriptor);
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        fprintf(2, "Usage: find dir name\n");
+    if(argc < 3){
+        fprintf(2, "Usage: find_files path filename\n");
         exit(1);
     }
-
-    char dir[MAX_PATH];
-    char name[DIRSIZ + 1];
-
-    if (strlen(argv[1]) > MAX_PATH - 2 || strlen(argv[2]) > DIRSIZ) {
-        fprintf(2, "dir or name too long...\n");
-        exit(1);
-    }
-
-    strcpy(dir, argv[1]);
-    strcpy(name, argv[2]);
-
-    int fd;
-    struct stat st;
-
-    if ((fd = open(dir, 0)) < 0) {
-        fprintf(2, "find: cannot open %s\n", dir);
-        exit(1);
-    }
-
-    if (fstat(fd, &st) < 0) {
-        fprintf(2, "find: cannot stat %s\n", dir);
-        close(fd);
-        exit(1);
-    }
-
-    if (st.type != T_DIR) {
-        printf("%s is not a directory\n", dir);
-    } else {
-        find(fd, dir, name);
-    }
-
-    close(fd);
+    find_files(argv[1], argv[2]);
     exit(0);
 }
+
