@@ -310,11 +310,7 @@ fork(void)
 
   safestrcpy(np->name, p->name, sizeof(p->name));
 
-<<<<<<< HEAD
-  np->trace_mask = p->trace_mask;
 
-=======
->>>>>>> parent of c2987e7 (làm câu 2 lần 1)
   pid = np->pid;
 
   release(&np->lock);
