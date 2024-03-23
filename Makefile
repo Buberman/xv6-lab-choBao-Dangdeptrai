@@ -172,30 +172,6 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 .PRECIOUS: %.o
 
 UPROGS=\
-<<<<<<< HEAD
-	/_xargs\
-	/_find\
-	/_primes\
-	/_pingpong\
-	/_sleep\
-	/_cat\
-	/_echo\
-	/_forktest\
-	/_grep\
-	/_init\
-	/_kill\
-	/_ln\
-	/_ls\
-	/_mkdir\
-	/_rm\
-	/_sh\
-	/_stressfs\
-	/_usertests\
-	/_grind\
-	/_wc\
-	/_zombie\
-	/_trace\
-=======
 	$U/_xargs\
 	$U/_find\
 	$U/_primes\
@@ -217,7 +193,8 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
->>>>>>> parent of c2987e7 (làm câu 2 lần 1)
+
+
 
 
 
