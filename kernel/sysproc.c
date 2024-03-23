@@ -91,7 +91,7 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-<<<<<<< HEAD
+
 
 
 uint64
@@ -102,5 +102,4 @@ sys_trace(void)
   myproc()->trace_mask = mask;
   return 0;
 }
-=======
->>>>>>> parent of c2987e7 (làm câu 2 lần 1)
+
